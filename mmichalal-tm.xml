@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<repositories version="1.0">
+  <repo priority="50" quality="experimental" status="unofficial">
+    <name>mmichalak-tm</name>
+    <description>Custom stuff for gentoo from mmichalak.</description>
+    <homepage>http://github.com/mmichalak-tm/</homepage>
+    <source type="git">git://github.com/mmichalak-tm/portage-overlay.git</source>
+  </repo>
+</repositories>
