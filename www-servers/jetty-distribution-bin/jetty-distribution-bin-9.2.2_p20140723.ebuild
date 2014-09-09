@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -366,17 +366,17 @@ pkg_postinst() {
     fi
     elog ""
     elog "To check configuration run command:"
-    elog "  rc-service jetty-9.${JETTY_SERVICE_NAME} status"
+    elog "  rc-service ${JETTY_SERVICE_NAME}.${jetty_base_name} status"
     elog "or"
     elog "  /etc/init.d/${JETTY_SERVICE_NAME} status"
     elog ""
     elog "To start server run command:"
-    elog "  rc-service jetty-9.${JETTY_SERVICE_NAME} start"
+    elog "  rc-service ${JETTY_SERVICE_NAME}.${jetty_base_name} start"
     elog "or"
     elog "  /etc/init.d/${JETTY_SERVICE_NAME} start"
     elog ""
     elog "To add as service run command:"
-    elog "  rc-update add jetty-9.${JETTY_SERVICE_NAME}"
+    elog "  rc-update add ${JETTY_SERVICE_NAME}.${jetty_base_name}"
     elog ""
     elog "You can then treat ${JETTY_SERVICE_NAME}.new-base-name as any other service, so you can"
     elog "stop one jetty and start another if you need to."
