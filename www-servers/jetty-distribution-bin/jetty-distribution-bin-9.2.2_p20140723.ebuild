@@ -30,8 +30,10 @@ JETTY_NAME="jetty"
 JETTY_USER="${JETTY_USER:-${JETTY_NAME}}"
 JETTY_GROUP="${JETTY_GROUP:-${JETTY_NAME}}"
 JETTY_SERVICE_NAME="${JETTY_NAME}-${MY_SLOT}"
-JETTY_LOG_DIR="/var/log/${JETTY_SERVICE_NAME}"
-JETTY_TMP_DIR="/var/lib/${JETTY_SERVICE_NAME}"
+LOG_DIR="/var/log"
+JETTY_LOG_DIR="${LOG_DIR}/${JETTY_SERVICE_NAME}"
+TMP_DIR="/var/lib"
+JETTY_TMP_DIR="${TMP_DIR}/${JETTY_SERVICE_NAME}"
 JETTY_CONF_DIR="/etc/${JETTY_SERVICE_NAME}"
 JETTY_RUN_DIR="/run/${JETTY_SERVICE_NAME}"
 JETTY_DEMO_BASE_NAME="demo-base"
@@ -51,7 +53,11 @@ if use demo ; then
         JETTY_BASE="${JETTY_HOME}/${JETTY_DEMO_BASE_NAME}"
     fi
 else
-    JETTY_BASE="" ## "${JETTY_HOME}"
+    if use baseoutside ; then
+        JETTY_BASE="/var/www/localhost/jetty-base" ## "${JETTY_HOME}"
+    else
+        JETTY_BASE="${JETTY_HOME}/jetty-base"
+    fi
 fi
 
 
@@ -146,8 +152,12 @@ src_configure() {
     echo "    export JETTY_PID=\"\${JETTY_RUN}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}.pid\""                                  >> ${etc_initd_path}
     if use extconf ; then
         echo "    export JETTY_STATE=\"\${JETTY_STATE:-\${JETTY_RUN}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}.state}\""         >> ${etc_initd_path}
+        echo "    export JETTY_LOGS=\"\${JETTY_LOGS:-${LOG_DIR}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}}\""                                                            >> ${etc_initd_path}
+        echo "    export TMPDIR=\"\${TMPDIR:-${TMP_DIR}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}}\""                                                                    >> ${etc_initd_path}
     else
         echo "    export JETTY_STATE=\"\${JETTY_RUN}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}.state\""                          >> ${etc_initd_path}
+        echo "    export JETTY_LOGS=\"${LOG_DIR}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}\""                                                                            >> ${etc_initd_path}
+        echo "    export TMPDIR=\"${TMP_DIR}/${JETTY_SERVICE_NAME}.\${JETTY_BASE_NAME}\""                                                                                >> ${etc_initd_path}
     fi
     echo ""                                                                                                                      >> ${etc_initd_path}
     echo "    if [ -f ${JETTY_CONF_DIR}/\${JETTY_BASE_NAME}.conf ]; then"                                                        >> ${etc_initd_path}
@@ -172,24 +182,24 @@ src_configure() {
     echo "    # fi"                                                                                                              >> ${etc_initd_path}
     echo ""                                                                                                                      >> ${etc_initd_path}
     echo "else"                                                                                                                  >> ${etc_initd_path}
+    echo ""                                                                                                                      >> ${etc_initd_path}
     echo "    export JETTY_PID=\"\${JETTY_RUN}/${JETTY_SERVICE_NAME}.pid\""                                                      >> ${etc_initd_path}
     if use extconf ; then
         echo "    export JETTY_STATE=\"\${JETTY_STATE:-\${JETTY_RUN}/${JETTY_SERVICE_NAME}.state}\""                             >> ${etc_initd_path}
+        echo "    export JETTY_LOGS=\"\${JETTY_LOGS:-${JETTY_LOG_DIR}}\""                                                            >> ${etc_initd_path}
+        echo "    export TMPDIR=\"\${TMPDIR:-${JETTY_TMP_DIR}}\""                                                                    >> ${etc_initd_path}
     else
         echo "    export JETTY_STATE=\"\${JETTY_RUN}/${JETTY_SERVICE_NAME}.state\""                                              >> ${etc_initd_path}
+        echo "    export JETTY_LOGS=\"${JETTY_LOG_DIR}\""                                                                            >> ${etc_initd_path}
+        echo "    export TMPDIR=\"${JETTY_TMP_DIR}\""                                                                                >> ${etc_initd_path}
     fi
     echo "    export JETTY_BASE=\"\${JETTY_BASE:-\${JETTY_HOME}}\""                                                              >> ${etc_initd_path}
     echo "    ## export JETTY_CONF=\"/etc/conf.d/${JETTY_SERVICE_NAME}\""                                                        >> ${etc_initd_path}
+    echo ""                                                                                                                      >> ${etc_initd_path}
+    echo ""                                                                                                                      >> ${etc_initd_path}
     echo "fi"                                                                                                                    >> ${etc_initd_path}
     echo ""                                                                                                                      >> ${etc_initd_path}
     echo ""                                                                                                                      >> ${etc_initd_path}
-    if use extconf ; then
-        echo "export JETTY_LOGS=\"\${JETTY_LOGS:-${JETTY_LOG_DIR}}\""                                                            >> ${etc_initd_path}
-        echo "export TMPDIR=\"\${TMPDIR:-${JETTY_TMP_DIR}}\""                                                                    >> ${etc_initd_path}
-    else
-        echo "export JETTY_LOGS=\"${JETTY_LOG_DIR}\""                                                                            >> ${etc_initd_path}
-        echo "export TMPDIR=\"${JETTY_TMP_DIR}\""                                                                                >> ${etc_initd_path}
-    fi
     echo ""                                                                                                                      >> ${etc_initd_path}
     if use debug ; then
         echo "print_debug_info() {"                                                                                              >> ${etc_initd_path}
@@ -226,6 +236,16 @@ src_configure() {
     echo "    if [ ! -d ${JETTY_RUN_DIR} ]; then"                                                                                >> ${etc_initd_path}
     echo "        mkdir -p ${JETTY_RUN_DIR}"                                                                                     >> ${etc_initd_path}
     echo "        chown ${JETTY_USER}:${JETTY_GROUP} ${JETTY_RUN_DIR}"                                                           >> ${etc_initd_path}
+    echo "    fi"                                                                                                                >> ${etc_initd_path}
+    echo ""                                                                                                                      >> ${etc_initd_path}
+    echo "    if [ ! -d \${JETTY_LOGS} ]; then"                                                                                >> ${etc_initd_path}
+    echo "        mkdir -p \${JETTY_LOGS}"                                                                                     >> ${etc_initd_path}
+    echo "        chown ${JETTY_USER}:${JETTY_GROUP} \${JETTY_LOGS}"                                                           >> ${etc_initd_path}
+    echo "    fi"                                                                                                                >> ${etc_initd_path}
+    echo ""                                                                                                                      >> ${etc_initd_path}
+    echo "    if [ ! -d \${TMPDIR} ]; then"                                                                                >> ${etc_initd_path}
+    echo "        mkdir -p \${TMPDIR}"                                                                                     >> ${etc_initd_path}
+    echo "        chown ${JETTY_USER}:${JETTY_GROUP} \${TMPDIR}"                                                           >> ${etc_initd_path}
     echo "    fi"                                                                                                                >> ${etc_initd_path}
     echo ""                                                                                                                      >> ${etc_initd_path}
     if use debug ; then
@@ -334,13 +354,23 @@ pkg_postinst() {
     # elog "${JETTY_SERVICE_NAME}.conf in ${JETTY_CONF_DIR} along with any extra files it may need."
     # elog ""
     elog ""
-    elog ""
     elog "Jetty server installed in: ${JETTY_HOME}"
     if use demo ; then
         elog "Demo installed in: ${JETTY_BASE}"
         elog "Demo config file: ${JETTY_CONF_DIR}/${JETTY_DEMO_BASE_NAME}.conf"
     fi
     elog ""
+    elog "Run directory: '${JETTY_RUN_DIR}'"
+    elog ""
+    elog "Config directory: '${JETTY_CONF_DIR}'"
+    elog ""
+    elog "Log directories:"
+    elog "  '${LOG_DIR}/${JETTY_SERVICE_NAME}.${jetty_base_name}' for service name: ${JETTY_SERVICE_NAME}.${jetty_base_name}"
+    elog "  '${LOG_DIR}/${JETTY_SERVICE_NAME}' for service name: ${JETTY_SERVICE_NAME}"
+    elog ""
+    elog "Temp directories:"
+    elog "  '${TMP_DIR}/${JETTY_SERVICE_NAME}.${jetty_base_name}' for service name: ${JETTY_SERVICE_NAME}.${jetty_base_name}"
+    elog "  '${TMP_DIR}/${JETTY_SERVICE_NAME}' for service name: ${JETTY_SERVICE_NAME}"
     elog ""
     elog "To create more Base Jetty, simply create a new config file "
     elog " ${jetty_base_name}.conf in ${JETTY_CONF_DIR}/ or "
@@ -378,7 +408,7 @@ pkg_postinst() {
     elog "To add as service run command:"
     elog "  rc-update add ${JETTY_SERVICE_NAME}.${jetty_base_name}"
     elog ""
-    elog "You can then treat ${JETTY_SERVICE_NAME}.new-base-name as any other service, so you can"
+    elog "You can then treat ${JETTY_SERVICE_NAME}.<new-base-name> as any other service, so you can"
     elog "stop one jetty and start another if you need to."
     elog ""
     elog ""
