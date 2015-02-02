@@ -11,35 +11,11 @@ HOMEPAGE="https://www.eclipse.org/jetty/"
 KEYWORDS="~amd64"
 LICENSE="Apache-2.0;Eclipse-1.0"
 
-IUSE="demo baseoutside subslots srvdir extconf archived debug slotminor slotrevision" ## jettyshcp jettyshmv
+IUSE="demo baseoutside srvdir extconf archived debug" ## jettyshcp jettyshmv
 
-if use subslots ; then
-    if use slotminor ; then
-        if use slotrevision ; then
-            SLOT="$(get_major_version ).$(get_version_component_range 2 ).$(get_version_component_range 3 )"
-            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )-$(get_version_component_range 3 )"
-        else
-            SLOT="$(get_major_version ).$(get_version_component_range 2 )/$(get_version_component_range 3 )"
-            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )_$(get_version_component_range 3 )"
-        fi
-    else
-        SLOT="$(get_major_version )/$(get_version_component_range 2 )$(get_version_component_range 3 )"
-        MY_SLOT="$(get_major_version )_$(get_version_component_range 2 )$(get_version_component_range 3 )"
-    fi
-else
-    if use slotminor ; then
-        if use slotrevision ; then
-            SLOT="$(get_major_version ).$(get_version_component_range 2 ).$(get_version_component_range 3 )"
-            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )-$(get_version_component_range 3 )"
-        else
-            SLOT="$(get_major_version ).$(get_version_component_range 2 )"
-            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )"
-        fi
-    else
-        SLOT="$(get_major_version )"
-        MY_SLOT="${SLOT}"
-    fi
-fi
+SLOT="$(get_major_version ).$(get_version_component_range 2 ).$(get_version_component_range 3 )"
+MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )-$(get_version_component_range 3 )"
+
 
 MY_PN="jetty-distribution"
 MY_PV="${PV/_p/.v}"
