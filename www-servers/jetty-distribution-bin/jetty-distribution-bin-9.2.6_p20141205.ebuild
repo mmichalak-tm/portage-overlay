@@ -190,7 +190,7 @@ src_configure() {
         echo "export JETTY_LOGS=\"${JETTY_LOG_DIR}\""                                                                        >> ${etc_initd_path}
         echo "export TMPDIR=\"${JETTY_TMP_DIR}\""                                                                            >> ${etc_initd_path}
     fi
-        echo ""                                                                                                              >> ${etc_initd_path}
+        echo ""                                                                                                                  >> ${etc_initd_path}
         if use debug ; then
             echo "print_debug_info() {"                                                                                      >> ${etc_initd_path}
             echo ""                                                                                                          >> ${etc_initd_path}

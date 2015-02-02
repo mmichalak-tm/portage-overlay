@@ -1,0 +1,103 @@
+--- jetty.sh.orig	2014-12-05 17:48:31.000000000 +0100
++++ jetty.sh	2015-02-02 17:58:23.126562990 +0100
+@@ -399,28 +399,31 @@
+ # Comment these out after you're happy with what 
+ # the script is doing.
+ #####################################################
+ if (( DEBUG ))
+ then
++  echo ""
+   echo "START_INI      =  $START_INI"
+   echo "JETTY_HOME     =  $JETTY_HOME"
+   echo "JETTY_BASE     =  $JETTY_BASE"
+   echo "JETTY_CONF     =  $JETTY_CONF"
+   echo "JETTY_PID      =  $JETTY_PID"
+   echo "JETTY_START    =  $JETTY_START"
+   echo "JETTY_ARGS     =  ${JETTY_ARGS[*]}"
+   echo "JAVA_OPTIONS   =  ${JAVA_OPTIONS[*]}"
+   echo "JAVA           =  $JAVA"
+   echo "RUN_CMD        =  ${RUN_CMD}"
++  echo "RUN_CMD*       =  ${RUN_CMD[*]}"
++  echo ""
+ fi
+ 
+ ##################################################
+ # Do the action
+ ##################################################
+ case "$ACTION" in
+   start)
+-    echo -n "Starting Jetty: "
++    echo "Starting Jetty: "
+ 
+     if (( NO_START )); then 
+       echo "Not starting ${NAME} - NO_START=1";
+       exit
+     fi
+@@ -428,14 +431,16 @@
+     if [ $UID -eq 0 ] && type start-stop-daemon > /dev/null 2>&1 
+     then
+       unset CH_USER
+       if [ -n "$JETTY_USER" ]
+       then
+-        CH_USER="-c$JETTY_USER"
++       #CH_USER="-c$JETTY_USER"
++        CH_USER="-u$JETTY_USER"
+       fi
+ 
+-      start-stop-daemon -S -p"$JETTY_PID" $CH_USER -d"$JETTY_BASE" -b -m -a "$JAVA" -- "${RUN_ARGS[@]}" start-log-file="$JETTY_LOGS/start.log"
++     #start-stop-daemon -S -p"$JETTY_PID" $CH_USER -d"$JETTY_BASE" -b -m -a "$JAVA" -- "${RUN_ARGS[@]}" start-log-file="$JETTY_LOGS/start.log"
++      start-stop-daemon -S -p"$JETTY_PID" $CH_USER -d"$JETTY_BASE" -b -m -x "$JAVA" -- "${RUN_ARGS[@]}" start-log-file="$JETTY_LOGS/start.log"
+ 
+     else
+ 
+       if running $JETTY_PID
+       then
+@@ -480,18 +485,20 @@
+     fi
+ 
+     ;;
+ 
+   stop)
+-    echo -n "Stopping Jetty: "
++    echo "Stopping Jetty: "
+     if [ $UID -eq 0 ] && type start-stop-daemon > /dev/null 2>&1; then
+-      start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s HUP
++     #start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s HUP
++      start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -x "$JAVA" -s HUP
+       
+       TIMEOUT=30
+       while running "$JETTY_PID"; do
+         if (( TIMEOUT-- == 0 )); then
+-          start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s KILL
++         #start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s KILL
++          start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -x "$JAVA" -s KILL
+         fi
+ 
+         sleep 1
+       done
+     else
+@@ -558,10 +565,11 @@
+ 
+     exec "${RUN_CMD[@]}"
+     ;;
+ 
+   check|status)
++    echo
+     echo "Checking arguments to Jetty: "
+     echo "START_INI      =  $START_INI"
+     echo "JETTY_HOME     =  $JETTY_HOME"
+     echo "JETTY_BASE     =  $JETTY_BASE"
+     echo "JETTY_CONF     =  $JETTY_CONF"
+@@ -576,11 +584,11 @@
+     echo "RUN_CMD        =  ${RUN_CMD[*]}"
+     echo
+     
+     if running "$JETTY_PID"
+     then
+-      echo "Jetty running pid=$(< "$JETTY_PID")"
++      echo "Jetty running pid=$(< ${JETTY_PID})"
+       exit 0
+     fi
+     exit 1
+ 
+     ;;
