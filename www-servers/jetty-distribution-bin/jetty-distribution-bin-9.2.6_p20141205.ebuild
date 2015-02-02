@@ -11,14 +11,34 @@ HOMEPAGE="https://www.eclipse.org/jetty/"
 KEYWORDS="~amd64"
 LICENSE="Apache-2.0;Eclipse-1.0"
 
-IUSE="demo baseoutside subslots srvdir extconf archived debug" ## jettyshcp jettyshmv
+IUSE="demo baseoutside subslots srvdir extconf archived debug slotminor slotrevision" ## jettyshcp jettyshmv
 
 if use subslots ; then
-    SLOT="$(get_major_version )/$(get_version_component_range 2 )$(get_version_component_range 3 )"
-    MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )$(get_version_component_range 3 )"
+    if use slotminor ; then
+        if use slotrevision ; then
+            SLOT="$(get_major_version ).$(get_version_component_range 2 ).$(get_version_component_range 3 )"
+            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )-$(get_version_component_range 3 )"
+        else
+            SLOT="$(get_major_version ).$(get_version_component_range 2 )/$(get_version_component_range 3 )"
+            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )_$(get_version_component_range 3 )"
+        fi
+    else
+        SLOT="$(get_major_version )/$(get_version_component_range 2 )$(get_version_component_range 3 )"
+        MY_SLOT="$(get_major_version )_$(get_version_component_range 2 )$(get_version_component_range 3 )"
+    fi
 else
-    SLOT="$(get_major_version )"
-    MY_SLOT="${SLOT}"
+    if use slotminor ; then
+        if use slotrevision ; then
+            SLOT="$(get_major_version ).$(get_version_component_range 2 ).$(get_version_component_range 3 )"
+            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )-$(get_version_component_range 3 )"
+        else
+            SLOT="$(get_major_version ).$(get_version_component_range 2 )"
+            MY_SLOT="$(get_major_version )-$(get_version_component_range 2 )"
+        fi
+    else
+        SLOT="$(get_major_version )"
+        MY_SLOT="${SLOT}"
+    fi
 fi
 
 MY_PN="jetty-distribution"
@@ -330,58 +350,58 @@ pkg_preinst () {
 pkg_postinst() {
     local jetty_base_name="jetty-base"
 
-        # elog "The ${JETTY_SERVICE_NAME} init script expects to find the configuration file"
-        # elog "${JETTY_SERVICE_NAME}.conf in ${JETTY_CONF_DIR} along with any extra files it may need."
-        # elog ""
-        elog ""
-        elog ""
-        elog "Jetty server installed in: ${JETTY_HOME}"
+    # elog "The ${JETTY_SERVICE_NAME} init script expects to find the configuration file"
+    # elog "${JETTY_SERVICE_NAME}.conf in ${JETTY_CONF_DIR} along with any extra files it may need."
+    # elog ""
+    elog ""
+    elog ""
+    elog "Jetty server installed in: ${JETTY_HOME}"
     if use demo ; then
-            elog "Demo installed in: ${JETTY_BASE}"
-            elog "Demo config file: ${JETTY_CONF_DIR}/${JETTY_DEMO_BASE_NAME}.conf"
+        elog "Demo installed in: ${JETTY_BASE}"
+        elog "Demo config file: ${JETTY_CONF_DIR}/${JETTY_DEMO_BASE_NAME}.conf"
     fi
-        elog ""
-        elog ""
-        elog "To create more Base Jetty, simply create a new config file "
+    elog ""
+    elog ""
+    elog "To create more Base Jetty, simply create a new config file "
     elog " ${jetty_base_name}.conf in ${JETTY_CONF_DIR}/ or "
-        elog " ${JETTY_SERVICE_NAME}.${jetty_base_name} in /etc/conf.g/ for it and"
-        elog "then create a symlink to the ${JETTY_SERVICE_NAME} init script from a link called"
-        elog "${JETTY_SERVICE_NAME}.${jetty_base_name} - like so"
-        elog "   cd ${JETTY_CONF_DIR}"
-        elog "   ${EDITOR##*/} ${jetty_base_name}.conf"
-        elog "or"
-        elog "   cd /etc/conf.d"
-        elog "   ${EDITOR##*/} ${jetty_base_name}"
-        elog ""
-        elog "   cd /etc/init.d"
-        elog "   ln -s ${JETTY_SERVICE_NAME} ${JETTY_SERVICE_NAME}.${jetty_base_name}"
-        elog ""
-        elog "Config file need path to your jetty base directory:"
-        elog "  JETTY_BASE=${JETTY_BASE}"
-        elog "If there will be no path, it will look for base directory in:"
-        if use baseoutside ; then
-                echo "  JETTY_BASE=\"\${JETTY_BASE:-${JETTY_INSTALL_DIR}/${P}-\${JETTY_BASE_NAME}}\""
-        else
-                echo "  JETTY_BASE=\"\${JETTY_BASE:-${JETTY_INSTALL_DIR}/${P}/\${JETTY_BASE_NAME}}\""
-        fi
-        elog ""
-        elog "To check configuration run command:"
-        elog "  rc-service jetty-9.${JETTY_SERVICE_NAME} status"
-        elog "or"
-        elog "  /etc/init.d/${JETTY_SERVICE_NAME} status"
-        elog ""
-        elog "To start server run command:"
-        elog "  rc-service jetty-9.${JETTY_SERVICE_NAME} start"
-        elog "or"
-        elog "  /etc/init.d/${JETTY_SERVICE_NAME} start"
-        elog ""
-        elog "To add as service run command:"
-        elog "  rc-update add jetty-9.${JETTY_SERVICE_NAME}"
-        elog ""
-        elog "You can then treat ${JETTY_SERVICE_NAME}.new-base-name as any other service, so you can"
-        elog "stop one jetty and start another if you need to."
-        elog ""
-        elog ""
+    elog " ${JETTY_SERVICE_NAME}.${jetty_base_name} in /etc/conf.g/ for it and"
+    elog "then create a symlink to the ${JETTY_SERVICE_NAME} init script from a link called"
+    elog "${JETTY_SERVICE_NAME}.${jetty_base_name} - like so"
+    elog "   cd ${JETTY_CONF_DIR}"
+    elog "   ${EDITOR##*/} ${jetty_base_name}.conf"
+    elog "or"
+    elog "   cd /etc/conf.d"
+    elog "   ${EDITOR##*/} ${jetty_base_name}"
+    elog ""
+    elog "   cd /etc/init.d"
+    elog "   ln -s ${JETTY_SERVICE_NAME} ${JETTY_SERVICE_NAME}.${jetty_base_name}"
+    elog ""
+    elog "Config file need path to your jetty base directory:"
+    elog "  JETTY_BASE=${JETTY_BASE}"
+    elog "If there will be no path, it will look for base directory in:"
+    if use baseoutside ; then
+        elog "  JETTY_BASE=\"\${JETTY_BASE:-${JETTY_INSTALL_DIR}/${P}-\${jetty_base_name}}\""
+    else
+        elog "  JETTY_BASE=\"\${JETTY_BASE:-${JETTY_INSTALL_DIR}/${P}/\${jetty_base_name}}\""
+    fi
+    elog ""
+    elog "To check configuration run command:"
+    elog "  rc-service  ${JETTY_SERVICE_NAME}.${jetty_base_name} status (rc-service  ${JETTY_SERVICE_NAME} status)"
+    elog "or"
+    elog "  /etc/init.d/${JETTY_SERVICE_NAME}.${jetty_base_name} status (/etc/init.d/${JETTY_SERVICE_NAME} status)"
+    elog ""
+    elog "To start server run command:"
+    elog "  rc-service  ${JETTY_SERVICE_NAME}.${jetty_base_name} start (rc-service  ${JETTY_SERVICE_NAME} start)"
+    elog "or"
+    elog "  /etc/init.d/${JETTY_SERVICE_NAME}.${jetty_base_name} start (/etc/init.d/${JETTY_SERVICE_NAME} start)"
+    elog ""
+    elog "To add as service run command:"
+    elog "  rc-update add ${JETTY_SERVICE_NAME}.${jetty_base_name}"
+    elog ""
+    elog "You can then treat ${JETTY_SERVICE_NAME}.new-base-name as any other service, so you can"
+    elog "stop one jetty and start another if you need to."
+    elog ""
+    elog ""
 }
 
 #
